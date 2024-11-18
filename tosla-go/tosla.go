@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"io"
 	"math/rand"
+	"mime/multipart"
 	"net/http"
 	"strconv"
 	"time"
@@ -81,14 +82,12 @@ func (t *Tosla) getToslaReq() map[string]any {
 }
 
 func (t *Tosla) makeRequest(method string, endpoint string, data any) ([]byte, error) {
-	toslaReq := t.getToslaReq()
-
 	req, err := utils.StructToMap(data)
 	if err != nil {
 		return nil, err
 	}
 
-	reqBody, err := json.Marshal(utils.CombineMaps(toslaReq, req))
+	reqBody, err := json.Marshal(utils.CombineMaps(t.getToslaReq(), req))
 	if err != nil {
 		return nil, err
 	}
@@ -131,4 +130,58 @@ func (t *Tosla) CheckBin(req *requests.BinCheck) (*responses.BinResponse, error)
 	}
 
 	return resp, nil
+}
+
+func (t *Tosla) Init3ds(req *requests.Init3dsRequest) (*responses.Init3dsResponse, error) {
+	rawData, err := t.makeRequest("POST", "/api/Payment/threeDPayment", req)
+	if err != nil {
+		return nil, err
+	}
+
+	resp := &responses.Init3dsResponse{}
+	err = json.Unmarshal(rawData, resp)
+	if err != nil {
+		return nil, err
+	}
+
+	return resp, nil
+}
+
+func (t *Tosla) Pay3dsHtml(pay3dreq *requests.Pay3dsRequest) ([]byte, error) {
+	req, err := utils.StructToMap(pay3dreq)
+	if err != nil {
+		return nil, err
+	}
+
+	var requestBody bytes.Buffer
+
+	writer := multipart.NewWriter(&requestBody)
+	for k, v := range req {
+		_ = writer.WriteField(k, v.(string))
+	}
+	writer.Close()
+
+	httpReq, err := http.NewRequest("POST", t.baseUrl+"/api/Payment/ProcessCardForm", &requestBody)
+	if err != nil {
+		return nil, err
+	}
+
+	httpReq.Header.Set("Accept", "application/json")
+	httpReq.Header.Set("Content-type", writer.FormDataContentType())
+	httpReq.Header.Set("Expect", "100-continue")
+	httpReq.Header.Set("Connection", "Keep-Alive")
+	httpReq.Header.Set("Cache-Control", "no-cache")
+
+	resp, err := t.client.Do(httpReq)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	rawBody, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	return rawBody, nil
 }

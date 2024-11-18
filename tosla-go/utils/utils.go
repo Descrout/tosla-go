@@ -3,6 +3,8 @@ package utils
 import (
 	"fmt"
 	"reflect"
+	"strconv"
+	"strings"
 )
 
 // CombineMaps combines multiple maps into a single map.
@@ -81,4 +83,40 @@ func splitJsonTag(tag string) []string {
 		tagParts = append(tagParts, tag[1:])
 	}
 	return tagParts
+}
+
+// LuhnCheck validates a credit card number using the LUHN algorithm
+func LuhnCheck(cardNumber string) bool {
+	// Remove all spaces (just in case the input contains spaces)
+	cardNumber = strings.ReplaceAll(cardNumber, " ", "")
+
+	// Validate if the card number only contains digits
+	if len(cardNumber) < 13 || len(cardNumber) > 19 { // Credit card numbers are usually between 13 and 19 digits
+		return false
+	}
+
+	// Reverse the digits to start from the rightmost
+	var sum int
+	for i := len(cardNumber) - 1; i >= 0; i-- {
+		// Convert the character to an integer
+		digit, err := strconv.Atoi(string(cardNumber[i]))
+		if err != nil {
+			return false // Return false if the character is not a valid digit
+		}
+
+		// Double every second digit, starting from the rightmost digit
+		if (len(cardNumber)-i)%2 == 0 {
+			digit *= 2
+			// If doubling the digit results in a number greater than 9, subtract 9
+			if digit > 9 {
+				digit -= 9
+			}
+		}
+
+		// Add the digit to the sum
+		sum += digit
+	}
+
+	// If the total sum is divisible by 10, it's a valid card number
+	return sum%10 == 0
 }
