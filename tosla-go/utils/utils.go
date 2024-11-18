@@ -5,6 +5,7 @@ import (
 	"reflect"
 	"strconv"
 	"strings"
+	"time"
 )
 
 // CombineMaps combines multiple maps into a single map.
@@ -83,6 +84,25 @@ func splitJsonTag(tag string) []string {
 		tagParts = append(tagParts, tag[1:])
 	}
 	return tagParts
+}
+
+func CheckExpiration(expiration string) bool {
+	// Parse the expiration date in "mm/yy" format
+	expirationTime, err := time.Parse("01/06", expiration)
+	if err != nil {
+		// If there's an error, consider it expired
+		return true
+	}
+
+	// Set the expiration date to the last day of the month
+	// This will be the last day of the given month and year
+	lastDayOfMonth := time.Date(expirationTime.Year(), expirationTime.Month()+1, 0, 0, 0, 0, 0, time.UTC)
+
+	// Get the current time
+	currentTime := time.Now()
+
+	// Compare if the expiration date is before the current time
+	return lastDayOfMonth.Before(currentTime)
 }
 
 // LuhnCheck validates a credit card number using the LUHN algorithm

@@ -148,6 +148,10 @@ func (t *Tosla) Init3ds(req *requests.Init3dsRequest) (*responses.Init3dsRespons
 }
 
 func (t *Tosla) Pay3dsHtml(pay3dreq *requests.Pay3dsRequest) ([]byte, error) {
+	if err := pay3dreq.Validate(); err != nil {
+		return nil, err
+	}
+
 	req, err := utils.StructToMap(pay3dreq)
 	if err != nil {
 		return nil, err
