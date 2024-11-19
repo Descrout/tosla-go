@@ -5,6 +5,7 @@ import (
 	"crypto/sha512"
 	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"io"
 	"math/rand"
 	"mime/multipart"
@@ -129,6 +130,10 @@ func (t *Tosla) CheckBin(req *requests.BinCheck) (*responses.BinResponse, error)
 		return nil, err
 	}
 
+	if resp.Code != 0 {
+		return nil, errors.New(resp.Message)
+	}
+
 	return resp, nil
 }
 
@@ -142,6 +147,10 @@ func (t *Tosla) Init3ds(req *requests.Init3dsRequest) (*responses.Init3dsRespons
 	err = json.Unmarshal(rawData, resp)
 	if err != nil {
 		return nil, err
+	}
+
+	if resp.Code != 0 {
+		return nil, errors.New(resp.Message)
 	}
 
 	return resp, nil
