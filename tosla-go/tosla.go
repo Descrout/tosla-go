@@ -56,8 +56,7 @@ func (t *Tosla) GenerateRndTimeHash() (string, string, string) {
 	rnd := strconv.Itoa(rand.Intn(1000000) + 1)
 
 	// Get current time in "yyyyMMddHHmmss" format
-	location, _ := time.LoadLocation("Europe/Istanbul")
-
+	location := time.FixedZone("Europe/Istanbul", 3*60*60)
 	timeSpan := time.Now().In(location).Format("20060102150405")
 
 	// Concatenate all parts to form the hash string
