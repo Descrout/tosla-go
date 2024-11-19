@@ -53,9 +53,9 @@ func main() {
 	pay3dsHtml, err := cli.Pay3dsHtml(&requests.Pay3dsRequest{
 		ThreeDSessionID: threedsInit.ThreeDSessionID,
 		CardHolderName:  "Adil Basar",
-		CardNo:          "5890040000000016",
-		ExpireDate:      "02/28",
-		Cvv:             "200",
+		CardNo:          "5571135571135575",
+		ExpireDate:      "12/24",
+		Cvv:             "000",
 	})
 	if err != nil {
 		log.Fatal(err)
@@ -90,6 +90,22 @@ func initRoutes(cli *toslago.Tosla) *http.ServeMux {
 		log.Println("------------- INCOMING 3DS CONFIRM REQUEST -------------")
 
 		r.ParseForm()
+
+		hash := r.Form.Get("Hash")
+		orderID := r.Form.Get("OrderId")
+		bankResponseCode := r.Form.Get("BankResponseCode")
+		bankResponseMsg := r.Form.Get("BankResponseMessage")
+		requestStatus := r.Form.Get("RequestStatus")
+		mdStatus := r.Form.Get("MdStatus")
+
+		if !cli.ValidateIncomingHash(hash, orderID, mdStatus, bankResponseCode, bankResponseMsg, requestStatus) {
+			http.Error(w, "hash error", http.StatusUnauthorized)
+			return
+		}
+
+		if requestStatus == "1" && mdStatus == "1" {
+			log.Println("Payment Successful !!!")
+		}
 
 		for key, value := range r.Form {
 			log.Println(key, value)

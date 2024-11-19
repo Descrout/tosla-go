@@ -189,3 +189,17 @@ func (t *Tosla) Pay3dsHtml(pay3dreq *requests.Pay3dsRequest) ([]byte, error) {
 
 	return rawBody, nil
 }
+
+func (t *Tosla) ValidateIncomingHash(hashCheck string, orderID string, mdStatus string, bankResponseCode string, bankResponseMsg string, requestStatus string) bool {
+	hashString := t.apiPass + t.clientID + t.apiUser + orderID + mdStatus + bankResponseCode + bankResponseMsg + requestStatus
+
+	// Compute SHA-512 hash
+	hashBytes := sha512.New()
+	hashBytes.Write([]byte(hashString))
+	hashed := hashBytes.Sum(nil)
+
+	// Convert the hash to Base64
+	hash := base64.StdEncoding.EncodeToString(hashed)
+
+	return hash == hashCheck
+}
