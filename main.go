@@ -10,20 +10,14 @@ import (
 
 	toslago "github.com/Descrout/tosla-go/tosla-go"
 	"github.com/Descrout/tosla-go/tosla-go/requests"
-	"github.com/joho/godotenv"
 )
 
 func main() {
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatal("env could not be loaded: ", err)
-	}
-
 	cli := toslago.WithOptions(&toslago.ToslaOptions{
 		BaseUrl:  toslago.SANDBOX_URL,
-		ApiUser:  os.Getenv("API_USER"),
-		ApiPass:  os.Getenv("API_PASS"),
-		ClientID: os.Getenv("CLIENT_ID"),
+		ApiUser:  "POS_ENT_Test_001",
+		ApiPass:  "POS_ENT_Test_001!*!*",
+		ClientID: "1000000494",
 	})
 
 	binCheck, err := cli.CheckBin(&requests.BinCheck{

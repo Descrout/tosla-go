@@ -109,3 +109,6 @@ mux.HandleFunc("/3dsconfirm", func(w http.ResponseWriter, r *http.Request) {
     }
 })
 ```
+
+### Check out the full example
+Check out the ``main.go`` file for the complete example.
