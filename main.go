@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"encoding/json"
 	"log"
 	"net/http"
 	"os"
@@ -40,9 +39,9 @@ func main() {
 		Description:      "This is a test purchase",
 		Echo:             "echo",
 		ExtraParameters:  "extra",
-		InstallmentCount: 0,
-		Amount:           6999,
-		Currency:         949,
+		InstallmentCount: 0,    // No installment
+		Amount:           6999, // 69.99
+		Currency:         949,  // TRY
 		CallbackURL:      "http://localhost:8888/3dsconfirm",
 	})
 	if err != nil {
@@ -99,25 +98,17 @@ func initRoutes(cli *toslago.Tosla) *http.ServeMux {
 		mdStatus := r.Form.Get("MdStatus")
 
 		if !cli.ValidateIncomingHash(hash, orderID, mdStatus, bankResponseCode, bankResponseMsg, requestStatus) {
-			http.Error(w, "hash error", http.StatusUnauthorized)
+			http.Error(w, "hash validation error", http.StatusUnauthorized)
 			return
 		}
 
 		if requestStatus == "1" && mdStatus == "1" {
 			log.Println("Payment Successful !!!")
+		} else {
+			log.Println("Payment Error !!!")
 		}
 
 		for key, value := range r.Form {
-			log.Println(key, value)
-		}
-	})
-
-	mux.HandleFunc("/webhook", func(w http.ResponseWriter, r *http.Request) {
-		log.Println("------------- INCOMING WEBHOOK REQUEST -------------")
-
-		data := map[string]any{}
-		json.NewDecoder(r.Body).Decode(&data)
-		for key, value := range data {
 			log.Println(key, value)
 		}
 	})
