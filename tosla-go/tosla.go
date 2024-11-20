@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"errors"
 	"io"
+	"log"
 	"math/rand"
 	"mime/multipart"
 	"net/http"
@@ -57,7 +58,10 @@ func (t *Tosla) GenerateRndTimeHash() (string, string, string) {
 
 	// Get current time in "yyyyMMddHHmmss" format
 	location := time.FixedZone("Europe/Istanbul", 3*60*60)
-	timeSpan := time.Now().In(location).Format("20060102150405")
+	tm := time.Now().In(location)
+	log.Println(tm)
+	timeSpan := tm.Format("20060102150405")
+	log.Println(timeSpan)
 
 	// Concatenate all parts to form the hash string
 	hashString := t.apiPass + t.clientID + t.apiUser + rnd + timeSpan
@@ -212,4 +216,27 @@ func (t *Tosla) ValidateIncomingHash(hashCheck string, orderID string, mdStatus 
 	hash := base64.StdEncoding.EncodeToString(hashed)
 
 	return hash == hashCheck
+}
+
+func (t *Tosla) PayNon3ds(req *requests.Non3dsRequest) (*responses.Non3dsResponse, error) {
+	if err := req.Validate(); err != nil {
+		return nil, err
+	}
+
+	rawData, err := t.makeRequest("POST", "/api/Payment/Payment", req)
+	if err != nil {
+		return nil, err
+	}
+
+	resp := &responses.Non3dsResponse{}
+	err = json.Unmarshal(rawData, resp)
+	if err != nil {
+		return nil, err
+	}
+
+	if resp.Code != 0 {
+		return nil, errors.New(resp.Message)
+	}
+
+	return resp, nil
 }

@@ -55,6 +55,24 @@ func main() {
 	}
 	log.Println(string(pay3dsHtml))
 
+	payNon3ds, err := cli.PayNon3ds(&requests.Non3dsRequest{
+		CardHolderName:   "Adil Basar",
+		CardNo:           "5571135571135575",
+		ExpireDate:       "12/24",
+		Cvv:              "200",
+		OrderID:          "",
+		Description:      "This is a test purchase",
+		Echo:             "echo",
+		ExtraParameters:  "extra",
+		InstallmentCount: 0,    // No installment
+		Amount:           6999, // 69.99
+		Currency:         949,  // TRY
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Println(payNon3ds)
+
 	port := ":8888"
 	server := &http.Server{
 		Addr:    port,
